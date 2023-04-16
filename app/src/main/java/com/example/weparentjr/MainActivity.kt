@@ -1,31 +1,55 @@
 package com.example.weparentjr
 
+import android.app.Activity
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-
 import android.graphics.drawable.Drawable
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
+import android.os.UserManager
+import android.util.Log
+import android.widget.Button
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.weparentjr.data.response.BaseResponse
 import com.example.weparentjr.model.AppInfo
+import com.example.weparentjr.utils.MyDeviceAdminReceiver
 import com.example.weparentjr.viewmodel.ApplicationViewModel
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var devicePolicyManager: DevicePolicyManager
+    private lateinit var componentName: ComponentName
     private lateinit var applicationViewModel: ApplicationViewModel
+
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
+    private var isAdminPermission = false
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        componentName = ComponentName(this, MyDeviceAdminReceiver::class.java)
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+        startActivityForResult(intent, REQUEST_CODE_ENABLE_ADMIN)
+
+
         applicationViewModel = ViewModelProvider(this).get(ApplicationViewModel::class.java)
 
         val textView: TextView = findViewById(R.id.text_view)
+        val button: Button=findViewById(R.id.button)
 
         val pm: PackageManager = packageManager
         val packages: List<PackageInfo> = pm.getInstalledPackages(0)
@@ -38,10 +62,7 @@ class MainActivity : AppCompatActivity() {
             }
             val appName: String = packageInfo.applicationInfo.loadLabel(pm).toString()
             val packageName: String = packageInfo.packageName
-            if (packageName == "com.example.mealmate.test") {
-                blockApp(packageName)
-                continue // Skip the blocked app
-            }
+
             val icon: Drawable = pm.getApplicationIcon(packageName)
 
             addApps(appName,icon.toString(),packageName)
@@ -55,6 +76,11 @@ class MainActivity : AppCompatActivity() {
             //appListString.append(ImageUtils.drawableToString(app.icon)).append("\n\n")
         }
         textView.text = appListString.toString()
+        button.setOnClickListener {
+            Log.d("MyApp", "Setting click listener on button"   )
+            blockApp("com.aksantara.omah")
+        }
+
 
         applicationViewModel.addAppsResult.observe(this, { response ->
             when (response) {
@@ -72,14 +98,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun blockApp(packageName: String) {
-        // Implement code to block the app
-        // For example, you can disable the app by setting its enabled state to false
-        val pm: PackageManager = packageManager
-        pm.setApplicationEnabledSetting(
-            packageName,
-            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-            PackageManager.DONT_KILL_APP
-        )
+        Log.d("MyApp", "Blocking"   )
+        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        componentName = ComponentName(this, MyDeviceAdminReceiver::class.java)
+
+        // Check if your app is already a device admin
+        if (!devicePolicyManager.isAdminActive(componentName)) {
+            Log.d("MyApp", "App is not a device admin "   )
+            // Ask the user to enable device admin for your app
+           /* val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+            startActivityForResult(intent, REQUEST_ENABLE_ADMIN)*/
+            Log.d("MyApp", "App is device admin now"   )
+        } else {
+            Log.d("MyApp", "Blocking is now"  )
+            // Block the app you want to block
+            val packageName = packageName
+            val pm = packageManager
+            val ai = pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            pm.setApplicationEnabledSetting(packageName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0)
+
+        }
     }
 
 
@@ -88,6 +127,20 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    companion object {
+        private const val REQUEST_CODE_ENABLE_ADMIN = 1
+    }
+    private fun requestPermission() {
+        isAdminPermission = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.BIND_DEVICE_ADMIN
+        ) == PackageManager.PERMISSION_GRANTED
+        
+    }
+
+
+
 
 
 }
+
