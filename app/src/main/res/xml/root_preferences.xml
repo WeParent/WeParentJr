@@ -1,0 +1,79 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+   <Preference
+       app:selectable="false"
+       app:key="Image"
+       android:layout="@layout/settings_top_half"
+       />
+
+    <PreferenceCategory
+        app:allowDividerAbove="false"
+        app:key="general"
+        app:title="General"
+        app:layout="@layout/preference_category"
+        >
+
+        <SwitchPreferenceCompat
+            app:icon="@drawable/darkmode"
+            app:key="darkMode"
+            app:summaryOff="Off"
+            app:summaryOn="On"
+            app:defaultValue="false"
+            app:title="Dark mode" />
+
+        <EditTextPreference
+            app:selectable="true"
+            app:icon="@drawable/name"
+            app:key="about"
+            app:title="Name this device"
+            app:summary="Associate a name to this device's unique ID"
+            />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Permissions"
+        app:layout="@layout/preference_category"
+        >
+
+        <SwitchPreferenceCompat
+            app:key="location"
+            app:icon="@drawable/round_my_location_24"
+            app:summaryOff="Grant We Parent Jr the location permission ALL THE TIME to access all the available features"
+            app:summaryOn="Location permissions granted"
+            app:title="Location" />
+
+        <SwitchPreferenceCompat
+            app:key="notification"
+            app:icon="@drawable/notification"
+            app:summaryOff="Grant We Parent Jr the notification permission to receive our notifications"
+            app:summaryOn="Notification permissions granted"
+            app:title="Notifications" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="About"
+        app:layout="@layout/preference_category">
+
+       <EditTextPreference
+           app:selectable="false"
+           app:icon="@drawable/info"
+           app:key="about"
+           app:title="About We Parent"
+           app:summary="Find out more about us and our services"
+           />
+        <EditTextPreference
+            app:selectable="false"
+            app:icon="@drawable/conditions"
+            app:key="conditions"
+            app:title="User terms and conditions"
+            />
+        <EditTextPreference
+            app:selectable="false"
+            app:icon="@drawable/privacy"
+            app:key="policy"
+            app:title="Privacy policy"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

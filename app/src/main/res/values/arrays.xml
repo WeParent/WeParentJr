@@ -1,0 +1,22 @@
+<resources>
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+
+    <string-array name="permission_entries">
+        <item>Granted</item>
+        <item>Missing</item>
+        <item>Declined</item>
+    </string-array>
+    <string-array name="permission_values">
+        <item>granted</item>
+        <item>missing</item>
+        <item>declined</item>
+    </string-array>
+</resources>

@@ -1,10 +1,16 @@
-package com.example.weparentjr
+package com.example.weparentjr.views
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.cardview.widget.CardView
+import com.example.weparentjr.R
+import androidx.appcompat.app.AppCompatActivity
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -13,7 +19,7 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [homefragment.newInstance] factory method to
+ * Use the [home.newInstance] factory method to
  * create an instance of this fragment.
  */
 class homefragment : Fragment() {
@@ -34,7 +40,16 @@ class homefragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_homefragment, container, false)
+
+
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+        val qrCard = view?.findViewById<CardView>(R.id.qr)
+        qrCard?.setOnClickListener {
+            val intent = Intent(context, QRActivity::class.java)
+            startActivity(intent)
+        }
+        return view
+
     }
 
     companion object {

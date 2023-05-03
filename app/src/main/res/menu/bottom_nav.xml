@@ -6,6 +6,6 @@
         android:id="@+id/home"
         android:icon="@drawable/round_home_24"/>
     <item android:title="settings" android:id="@+id/settings"
-        android:icon="@drawable/round_settings_24"/>
+        android:icon="@drawable/ic_baseline_settings_24"/>
 
 </menu>
