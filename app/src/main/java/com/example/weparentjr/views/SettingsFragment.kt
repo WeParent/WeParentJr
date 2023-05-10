@@ -127,6 +127,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val isDarkMode = sharedPreferences?.getBoolean("DARKMODE", true)
 
         val currentmode = AppCompatDelegate.getDefaultNightMode()
+
         if( currentmode == AppCompatDelegate.MODE_NIGHT_YES)
         {
             Log.d("MODE NIGHT YES", darkmode?.isChecked.toString())

@@ -8,14 +8,17 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.BatteryManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.weparentjr.Location
 import com.google.android.gms.location.*
+import java.util.concurrent.TimeUnit
 
 
 class BackgroundService : Service() {
@@ -23,7 +26,40 @@ class BackgroundService : Service() {
     private var clickTimeStamps = mutableListOf<Long>()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private var startTime: Long = 0
+    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var screenTimeRunnable: Runnable
 
+    private fun getScreenTime(): Long {
+        val endTime = SystemClock.elapsedRealtime()
+        val screenTime = endTime - startTime
+        return screenTime
+    }
+
+
+    private fun startScreenTime() {
+
+        startTime = SystemClock.elapsedRealtime()
+        val mSocket = SocketHandler.getSocket()
+        screenTimeRunnable = object : Runnable {
+            override fun run() {
+                val screenTime = getScreenTime()
+                // Send the screen time to the parent's app through a socket
+                // Convert screen time from milliseconds to hours, minutes, and seconds
+                val hours = TimeUnit.MILLISECONDS.toHours(screenTime)
+                val minutes = TimeUnit.MILLISECONDS.toMinutes(screenTime) % 60
+                val seconds = TimeUnit.MILLISECONDS.toSeconds(screenTime) % 60
+
+                val screenTimeText = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                Log.d("Screen Time", screenTimeText.toString())
+                mSocket.emit("screentime", screenTimeText)
+
+                handler.postDelayed(this, 10000) // Run every second
+            }
+        }
+
+        handler.post(screenTimeRunnable)
+    }
 
     //Receiver eli yokeed yestana screen locked
     private val Receiver = object : BroadcastReceiver() {
@@ -33,6 +69,11 @@ class BackgroundService : Service() {
             val mSocket = SocketHandler.getSocket()
 
 
+
+            if(action == Intent.ACTION_USER_PRESENT) {
+                startScreenTime()
+            }
+
            if (action == Intent.ACTION_BATTERY_CHANGED) {
                val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
                val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
@@ -41,8 +82,14 @@ class BackgroundService : Service() {
                Log.d("BATTERY",batteryLevel.toString())
            }
 
+
+
+
+
+
             // ken lka screen tsakret
             if (action == Intent.ACTION_SCREEN_OFF) {
+
                 // ken screen off izid el timestamp mta screen off lel lista bech icompareha baad
                 clickTimeStamps.add(System.currentTimeMillis())
                 Log.d("Timestamps mta clicks",clickTimeStamps.toString())
@@ -72,6 +119,9 @@ class BackgroundService : Service() {
         }
     }
 
+    private fun stopScreenTime() {
+        handler.removeCallbacks(screenTimeRunnable)
+    }
 
     fun LocationManager() {
 
@@ -143,9 +193,13 @@ class BackgroundService : Service() {
             }.build()
             startForeground(Service_ID,notification)
         }
+
         //Register el receiver bech yestana el "Screen off"
         val screenOffFilter = IntentFilter("android.intent.action.SCREEN_OFF")
         registerReceiver(Receiver, screenOffFilter)
+
+        val userPresentFilter = IntentFilter("android.intent.action.USER_PRESENT")
+        registerReceiver(Receiver, userPresentFilter)
 
 
         //Register el receiver bech yestana el reboot mta tel

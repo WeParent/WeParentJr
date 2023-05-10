@@ -13,11 +13,10 @@ object SocketHandler {
     fun setSocket() {
         try {
             val options = IO.Options()
-
             options.query = "buildId=${Build.ID}"
             options.reconnection = true
             options.forceNew = true
-            mSocket = IO.socket("http://192.168.1.124:9090",options)
+            mSocket = IO.socket("http://192.168.1.16:9090",options)
         } catch (e: URISyntaxException) {
             Log.d("Socket init/syntax err",e.toString())
         }

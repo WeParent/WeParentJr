@@ -1,28 +1,40 @@
 package com.example.weparentjr
 
 import android.Manifest
+import android.Manifest.permission.READ_PHONE_STATE
 import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.telephony.TelephonyManager
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
+import com.example.weparentjr.models.AppInfo
+
 import com.example.weparentjr.databinding.ActivityMainBinding
 import com.example.weparentjr.utils.BackgroundService
 import com.example.weparentjr.views.SettingsFragment
 import com.example.weparentjr.views.homefragment
+import io.socket.client.Socket
+import java.util.Objects
 
 
 class MainActivity : AppCompatActivity() {
@@ -72,23 +84,40 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
+    }
 
+
+
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val isDarkMode = sharedPreferences?.getBoolean("DARKMODE", false)
-     /*
-        if (isDarkMode != null) {
-            if (isDarkMode) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            }
-            else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
-        }
 
-       */
+            // Permission is already granted, continue with the operation
+            val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = connectivityManager.activeNetwork
+
+            if (network != null) {
+                val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+                if (networkCapabilities != null) {
+                    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        // Device is connected to Wi-Fi
+                        Log.d("WIFI","WIFI")
+                    } else if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                        // Device is connected to mobile data
+                        Log.d("MOBILE DATA","MOBILE DATA")
+                    }
+                }
+            } else {
+                // Device is not connected to the internet
+                Log.d("NO CNX","NO CNX")
+            }
+
+
+
 
         val intent = Intent(this, BackgroundService::class.java)
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
