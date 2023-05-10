@@ -97,24 +97,7 @@ class MainActivity : AppCompatActivity() {
 
 
             // Permission is already granted, continue with the operation
-            val connectivityManager = this.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = connectivityManager.activeNetwork
 
-            if (network != null) {
-                val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
-                if (networkCapabilities != null) {
-                    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                        // Device is connected to Wi-Fi
-                        Log.d("WIFI","WIFI")
-                    } else if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                        // Device is connected to mobile data
-                        Log.d("MOBILE DATA","MOBILE DATA")
-                    }
-                }
-            } else {
-                // Device is not connected to the internet
-                Log.d("NO CNX","NO CNX")
-            }
 
 
 

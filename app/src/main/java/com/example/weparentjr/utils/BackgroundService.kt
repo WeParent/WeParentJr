@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Handler
@@ -14,8 +16,10 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import com.example.weparentjr.Location
 import com.google.android.gms.location.*
 import java.util.concurrent.TimeUnit
@@ -64,10 +68,33 @@ class BackgroundService : Service() {
     //Receiver eli yokeed yestana screen locked
     private val Receiver = object : BroadcastReceiver() {
 
+
+
+
+        @RequiresApi(Build.VERSION_CODES.M)
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
             val mSocket = SocketHandler.getSocket()
+            val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = connectivityManager.activeNetwork
 
+            if (network != null) {
+                val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+                if (networkCapabilities != null) {
+                    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                        // Device is connected to Wi-Fi
+                        Log.d("WIFI","WIFI")
+                        mSocket.emit("connectivity","WIFI")
+                    } else if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                        // Device is connected to mobile data
+                        mSocket.emit("connectivity","4G")
+                        Log.d("MOBILE DATA","MOBILE DATA")
+                    }
+                }
+            } else {
+                // Device is not connected to the internet
+                Log.d("NO CNX","NO CNX")
+            }
 
 
             if(action == Intent.ACTION_USER_PRESENT) {
@@ -98,7 +125,7 @@ class BackgroundService : Service() {
                     val lastFiveClicks = clickTimeStamps.takeLast(5)
                     val timeDiff = lastFiveClicks.last() - lastFiveClicks.first()
                     Log.d("El wakt bin clicks",timeDiff.toString())
-                    if (timeDiff < 10000) {
+                    if (timeDiff < 15000) {
 
                         Toast.makeText(context, "Screen lock button pressed 5 consecutive times !", Toast.LENGTH_SHORT).show()
 
